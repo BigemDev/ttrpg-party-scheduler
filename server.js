@@ -15,8 +15,8 @@ if (!APP_PASSWORD) {
 }
 const EFFECTIVE_PASSWORD = APP_PASSWORD || 'changeme';
 
-const sessions = new Map(); // token -> expiry timestamp
-const SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
+const sessions = new Map();
+const SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 
 function safeCompare(a, b) {
   const bufA = Buffer.from(String(a));
@@ -162,8 +162,8 @@ app.post('/api/campaigns', requireApiAuth, (req, res) => {
   if (!name || typeof name !== 'string' || !name.trim()) {
     return res.status(400).json({ error: 'A campaign name is required.' });
   }
-  const start = isValidTime(timeStart) ? timeStart : '18:00';
-  const end = isValidTime(timeEnd) ? timeEnd : '23:00';
+  const start = isValidTime(timeStart) ? timeStart : '00:00';
+  const end = isValidTime(timeEnd) ? timeEnd : '23:59';
   if (start >= end) {
     return res.status(400).json({ error: 'Start time must be before end time.' });
   }

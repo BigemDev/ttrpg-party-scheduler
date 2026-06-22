@@ -230,7 +230,12 @@ button:active { transform: translateY(1px); }
   box-shadow: var(--shadow);
   transition: background var(--transition), border-color var(--transition), box-shadow var(--transition);
 }
-.grid-table { border-collapse: separate; border-spacing: 3px; user-select: none; width: 100%; }
+.grid-table { 
+  border-collapse: collapse; 
+  user-select: none; 
+  width: 100%;
+  table-layout: fixed;
+}
 .grid-table th { 
   font-family: var(--font-mono); 
   font-size: 11px; 
@@ -243,6 +248,11 @@ button:active { transform: translateY(1px); }
   text-align: center; 
   line-height: 1.4;
   transition: background var(--transition), color var(--transition);
+  width: 14%;
+}
+.grid-table td { 
+  padding: 2px;
+  text-align: center;
 }
 .grid-table td.time-label { 
   font-family: var(--font-mono); 
@@ -256,9 +266,12 @@ button:active { transform: translateY(1px); }
   background: var(--surface); 
   z-index: 1;
   transition: background var(--transition), color var(--transition);
+  width: 60px;
+  min-width: 60px;
+  max-width: 60px;
 }
 .cell {
-  width: 32px;
+  width: 100%;
   height: 24px;
   border-radius: 3px;
   background: var(--bg);
@@ -266,6 +279,7 @@ button:active { transform: translateY(1px); }
   cursor: pointer;
   position: relative;
   transition: transform .04s, background .1s, border-color .1s;
+  margin: 0 auto;
 }
 .cell.selected-available {
   background: linear-gradient(150deg, #33d4a8, #00a97f 50%, #008f6a);
@@ -291,7 +305,16 @@ button:active { transform: translateY(1px); }
   box-shadow: inset 0 1px 0 rgba(255,255,255,.28), inset 0 -2px 3px rgba(0,0,0,.22);
   border-color: #008f6a;
 }
-.cell .pips { position: absolute; inset: 0; display: flex; flex-wrap: wrap; align-content: center; justify-content: center; gap: 2px; padding: 2px; }
+.cell .pips { 
+  position: absolute; 
+  inset: 0; 
+  display: flex; 
+  flex-wrap: wrap; 
+  align-content: center; 
+  justify-content: center; 
+  gap: 2px; 
+  padding: 2px; 
+}
 .cell .pip { width: 5px; height: 5px; border-radius: 50%; background: rgba(0,0,0,.4); }
 .cell .pip-count { font-family: var(--font-mono); font-size: 10px; font-weight: 700; color: rgba(0,0,0,.5); }
 
@@ -390,7 +413,7 @@ button:active { transform: translateY(1px); }
 @media (max-width: 600px) {
   h1 { font-size: 24px; }
   .field-row { flex-direction: column; gap: 0; }
-  .cell { width: 26px; height: 20px; }
+  .cell { height: 20px; }
   .grid-table th { font-size: 10px; }
   .top-nav { padding-left: 0; }
   .theme-toggle {
@@ -399,5 +422,11 @@ button:active { transform: translateY(1px); }
     width: 36px;
     height: 36px;
     font-size: 18px;
+  }
+  .grid-table td.time-label {
+    width: 40px;
+    min-width: 40px;
+    max-width: 40px;
+    font-size: 10px;
   }
 }

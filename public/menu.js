@@ -74,10 +74,8 @@ els.form.addEventListener('submit', async (e) => {
   const payload = {
     name: document.getElementById('name').value,
     description: document.getElementById('description').value,
-    timeStart: document.getElementById('time-start').value,
-    timeEnd: document.getElementById('time-end').value,
     slotMinutes: document.getElementById('slot-minutes').value,
-    roster
+    roster: roster
   };
 
   const btn = els.form.querySelector('button[type="submit"]');
