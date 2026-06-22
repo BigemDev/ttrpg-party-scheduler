@@ -1,0 +1,15 @@
+{
+  "name": "ttrpg-scheduler-selfhosted",
+  "version": "1.0.0",
+  "description": "Self-hosted weekly availability scheduler for tabletop game groups",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

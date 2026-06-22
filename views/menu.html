@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Campaigns — Scheduler</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+    <svg viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="5" />
+      <line x1="12" y1="1" x2="12" y2="3" />
+      <line x1="12" y1="21" x2="12" y2="23" />
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+      <line x1="1" y1="12" x2="3" y2="12" />
+      <line x1="21" y1="12" x2="23" y2="12" />
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+    </svg>
+  </button>
+
+  <div class="shell">
+    <div class="top-nav">
+      <div>
+        <div class="eyebrow">Party scheduler</div>
+        <h1>Campaigns</h1>
+      </div>
+      <button class="btn-ghost" id="logout-btn" type="button">Log out</button>
+    </div>
+
+    <button class="btn-primary" id="new-campaign-btn" type="button">+ New campaign</button>
+
+    <div class="card" id="create-card" style="display: none; margin-top: 18px;">
+      <form id="create-form">
+        <div class="field">
+          <label for="name">Campaign name</label>
+          <input type="text" id="name" placeholder="Curse of the Crimson Keep" maxlength="120" required />
+        </div>
+
+        <div class="field">
+          <label for="description">Description <span style="font-weight: 400;">(optional)</span></label>
+          <textarea id="description" placeholder="What are you playing? Any context for the group." maxlength="500"></textarea>
+        </div>
+
+        <div class="field">
+          <label for="slot-minutes">Grid resolution</label>
+            <select id="slot-minutes">
+              <option value="30" selected>30 minutes</option>
+              <option value="60">1 hour</option>
+            </select>
+        </div>
+
+        <div class="field">
+          <label>Players (the roster people pick their name from)</label>
+          <div class="tag-input" id="roster-input">
+            <div class="tag-chips" id="roster-chips"></div>
+            <input type="text" id="roster-text" placeholder="Type a name and press Enter" />
+          </div>
+        </div>
+
+        <button type="submit" class="btn-primary">Create campaign</button>
+        <div class="error-msg" id="create-error"></div>
+      </form>
+    </div>
+
+    <div class="campaign-grid" id="campaign-grid"></div>
+    <p class="hint" id="empty-hint" style="display: none;">No campaigns yet — create one above.</p>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="/menu.js"></script>
+</body>
+</html>

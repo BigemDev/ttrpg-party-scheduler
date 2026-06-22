@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Campaign — Scheduler</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+ <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+    <svg viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="5" />
+      <line x1="12" y1="1" x2="12" y2="3" />
+      <line x1="12" y1="21" x2="12" y2="23" />
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+      <line x1="1" y1="12" x2="3" y2="12" />
+      <line x1="21" y1="12" x2="23" y2="12" />
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+    </svg>
+  </button>
+
+  <div class="shell">
+    <div class="top-nav">
+      <div>
+        <a href="/" class="back-link">&larr; Campaigns</a>
+        <h1 id="campaign-name">Loading…</h1>
+        <p class="schedule-desc" id="campaign-desc"></p>
+      </div>
+      <button class="btn-ghost" id="settings-btn" type="button">Manage campaign</button>
+    </div>
+
+    <div class="card" id="settings-panel" style="display: none; margin-bottom: 24px;">
+      <div class="field">
+        <label for="set-name">Campaign name</label>
+        <input type="text" id="set-name" maxlength="120" />
+      </div>
+      <div class="field">
+        <label for="set-description">Description</label>
+        <textarea id="set-description" maxlength="500"></textarea>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label for="set-time-start">Earliest start</label>
+          <input type="time" id="set-time-start" />
+        </div>
+        <div class="field">
+          <label for="set-time-end">Latest end</label>
+          <input type="time" id="set-time-end" />
+        </div>
+        <div class="field">
+          <label for="set-slot-minutes">Grid resolution</label>
+          <select id="set-slot-minutes">
+            <option value="30">30 minutes</option>
+            <option value="60">1 hour</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label>Players (roster)</label>
+        <div class="tag-input" id="set-roster-input">
+          <div class="tag-chips" id="set-roster-chips"></div>
+          <input type="text" id="set-roster-text" placeholder="Type a name and press Enter" />
+        </div>
+      </div>
+      <div style="display: flex; gap: 10px; align-items: center;">
+        <button class="btn-primary" id="save-settings-btn" type="button">Save changes</button>
+        <button class="btn-ghost" id="delete-campaign-btn" type="button" style="color: var(--danger); border-color: var(--danger);">Delete campaign</button>
+      </div>
+      <div class="error-msg" id="settings-error"></div>
+    </div>
+
+     <div class="card" id="player-select-card" style="margin-bottom: 24px;">
+      <div class="field" style="margin-bottom: 0;">
+        <label for="player-select-main">Select your character to view and set availability</label>
+        <select id="player-select-main" style="font-size: 16px; padding: 12px;">
+          <option value="">— Choose your name —</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="card calendar-card" id="calendar-card" style="display: none;">
+      <div class="calendar-nav">
+        <button class="btn-ghost" id="prev-month" type="button">&larr;</button>
+        <h2 id="calendar-title">—</h2>
+        <button class="btn-ghost" id="next-month" type="button">&rarr;</button>
+        <button class="btn-ghost" id="today-btn" type="button">Jump to today</button>
+      </div>
+      <div class="calendar-grid" id="calendar-grid"></div>
+      <p class="hint">Click any week to select it — that becomes the week everyone schedules against.</p>
+    </div>
+
+    <div id="week-section" style="display: none; margin-top: 28px;">
+      <h2 id="week-title"></h2>
+
+      <div class="mode-tabs" style="margin-top: 14px;">
+        <button class="btn-ghost active" id="tab-mine" type="button">My availability</button>
+        <button class="btn-ghost" id="tab-group" type="button">Group overlap</button>
+      </div>
+
+      <div id="mine-panel">
+        <p class="hint" id="mine-hint">Click a square to cycle: <span style="color: var(--accent-hi);">●</span> Available (preferred) &nbsp; <span style="color: #d4c85a;">●</span> Available (not preferred) &nbsp; <span style="color: var(--danger);">●</span> Not available</p>
+        <div class="field" style="margin-top: 6px;">
+          <label for="note-input">Note <span style="font-weight: 400;">(optional)</span></label>
+          <textarea id="note-input" placeholder="e.g. running late Tuesday, out of town Thu–Fri" maxlength="300"></textarea>
+        </div>
+      </div>
+
+      <div id="group-panel" style="display: none;">
+        <p class="hint">Darker squares mean more people are free. Hover a square to see who. Click a name below to spotlight just them.</p>
+      </div>
+
+      <div class="grid-wrap">
+        <table class="grid-table" id="grid-table"></table>
+      </div>
+
+      <div class="participant-list" id="roster-status"></div>
+      <div class="notes-panel" id="notes-panel" style="display: none;"></div>
+    </div>
+
+    <div class="empty-state" id="error-state" style="display: none;"></div>
+  </div>
+
+  <div class="tooltip" id="tooltip"></div>
+  <div class="toast" id="toast"></div>
+
+  <script src="/campaign.js"></script>
+</body>
+</html>
