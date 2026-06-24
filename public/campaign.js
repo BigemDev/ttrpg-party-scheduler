@@ -55,7 +55,6 @@ let toastTimer = null;
 let currentPlayer = null;
 let saveTimeout = null;
 
-// ---------- small utils ----------
 function showToast(msg) {
   els.toast.textContent = msg;
   els.toast.classList.add('show');
@@ -116,7 +115,6 @@ function slotList() {
   return fullDaySlots();
 }
 
-// ---------- load ----------
 async function loadCampaign() {
   try {
     const res = await fetch(`/api/campaigns/${campaignId}`);
@@ -151,7 +149,6 @@ async function loadCampaign() {
   }
 }
 
-// ---------- calendar ----------
 function buildCalendarWeeks(year, month) {
   const firstOfMonth = new Date(year, month, 1);
   const lastOfMonth = new Date(year, month + 1, 0);
@@ -256,7 +253,6 @@ els.todayBtn.addEventListener('click', () => {
   renderCalendar();
 });
 
-// ---------- Player selection ----------
 function populatePlayerSelectMain() {
   if (!campaign || !campaign.roster || !campaign.roster.length) {
     return;
@@ -324,7 +320,6 @@ function loadPlayerAvailability(name) {
   renderMineView();
 }
 
-// ---------- week grid ----------
 function renderWeek() {
   const weekKey = campaign.selectedWeek;
   const days = weekDaysFromKey(weekKey);
@@ -350,6 +345,45 @@ function buildGrid(days) {
     headRow.appendChild(th);
   });
   thead.appendChild(headRow);
+
+  const btnRow = document.createElement('tr');
+  btnRow.className = 'day-btn-row';
+  const emptyTh = document.createElement('th');
+  emptyTh.className = 'day-btn-label';
+  btnRow.appendChild(emptyTh);
+  days.forEach(d => {
+    const th = document.createElement('th');
+    th.className = 'day-btn-cell';
+    const dayKey = toKey(d);
+    const btnGreen = document.createElement('button');
+    btnGreen.type = 'button';
+    btnGreen.className = 'day-btn day-btn-green';
+    btnGreen.title = 'Mark whole day available';
+    btnGreen.textContent = '✓';
+    btnGreen.addEventListener('click', () => {
+      if (mode !== 'mine') return;
+      if (!currentPlayer) { showToast('Choose your name first'); return; }
+      const cells = els.gridTable.querySelectorAll(`.cell[data-key^="${dayKey}|"]`);
+      cells.forEach(cell => paintCell(cell, 'available'));
+      autoSave();
+    });
+    const btnClear = document.createElement('button');
+    btnClear.type = 'button';
+    btnClear.className = 'day-btn day-btn-clear';
+    btnClear.title = 'Clear whole day';
+    btnClear.textContent = '✕';
+    btnClear.addEventListener('click', () => {
+      if (mode !== 'mine') return;
+      if (!currentPlayer) { showToast('Choose your name first'); return; }
+      const cells = els.gridTable.querySelectorAll(`.cell[data-key^="${dayKey}|"]`);
+      cells.forEach(cell => paintCell(cell, null));
+      autoSave();
+    });
+    th.appendChild(btnGreen);
+    th.appendChild(btnClear);
+    btnRow.appendChild(th);
+  });
+  thead.appendChild(btnRow);
   table.appendChild(thead);
 
   const tbody = document.createElement('tbody');
@@ -400,8 +434,6 @@ document.addEventListener('pointermove', (e) => {
   if (!isPainting) return;
   const el = document.elementFromPoint(e.clientX, e.clientY);
   if (el && el.classList && el.classList.contains('cell') && el !== lastPaintedCell) {
-    const currentState = el.dataset.state || null;
-    paintValue = getNextState(currentState);
     paintCell(el, paintValue);
     lastPaintedCell = el;
     autoSave();
@@ -434,9 +466,22 @@ function paintCell(cell, state) {
 function onCellHover(e) {
   if (mode !== 'group') return;
   const key = e.currentTarget.dataset.key;
-  const names = participantsAt(key);
-  if (!names.length) { hideTooltip(); return; }
-  els.tooltip.textContent = names.join(', ');
+  const responses = Object.values(weekResponses());
+  if (!responses.length) { hideTooltip(); return; }
+
+  if (spotlightKey) {
+    const p = weekResponses()[spotlightKey];
+    if (!p || !p.slots.includes(key)) { hideTooltip(); return; }
+    const st = (p.states && p.states[key]) || 'available';
+    const label = st === 'available' ? '✓ Available' : st === 'yellow' ? '~ Possible' : '✗ Unavailable';
+    els.tooltip.textContent = `${p.name}: ${label}`;
+  } else {
+    const states = slotStatesByPlayer(key);
+    if (!states.some(s => s.state !== 'unset')) { hideTooltip(); return; }
+    const stateIcon = { available: '✓', yellow: '~', red: '✗', unset: '?' };
+    els.tooltip.textContent = states.map(s => `${stateIcon[s.state]} ${s.name}`).join(', ');
+  }
+
   els.tooltip.style.display = 'block';
   const rect = e.currentTarget.getBoundingClientRect();
   els.tooltip.style.left = `${rect.left}px`;
@@ -453,14 +498,45 @@ function participantsAt(key) {
   return Object.values(weekResponses()).filter(p => p.slots.includes(key)).map(p => p.name);
 }
 
+function slotStatesByPlayer(key) {
+  const responses = weekResponses();
+  return Object.values(responses).map(p => {
+    if (!p.slots.includes(key)) return { name: p.name, state: 'unset' };
+    const st = (p.states && p.states[key]) || 'available';
+    return { name: p.name, state: st };
+  });
+}
+
+function overlapClass(key) {
+  const responses = Object.values(weekResponses());
+  if (!responses.length) return null;
+  const states = slotStatesByPlayer(key);
+  const anyRed = states.some(s => s.state === 'red');
+  const anyUnset = states.some(s => s.state === 'unset');
+  const anyYellow = states.some(s => s.state === 'yellow');
+  if (anyRed) return 'has-red';
+  if (anyUnset) {
+    if (anyYellow) return 'has-yellow';
+    return 'partial';
+  }
+  if (anyYellow) return 'has-yellow';
+  return 'all-green';
+}
+
 function renderGroupView() {
+  const btnRow = els.gridTable.querySelector('.day-btn-row');
+  if (btnRow) btnRow.style.display = 'none';
   const responses = Object.values(weekResponses());
   const total = responses.length;
   const cells = els.gridTable.querySelectorAll('.cell');
 
   cells.forEach(cell => {
     cell.classList.add('readonly');
-    cell.classList.remove('selected-available', 'selected-yellow', 'selected-red', 'heat-0', 'heat-low', 'heat-mid', 'heat-high');
+    cell.classList.remove(
+      'selected-available', 'selected-yellow', 'selected-red',
+      'heat-0', 'heat-low', 'heat-mid', 'heat-high',
+      'overlap-green', 'overlap-yellow', 'overlap-red', 'overlap-partial'
+    );
     cell.dataset.state = '';
     cell.innerHTML = '';
     const key = cell.dataset.key;
@@ -468,36 +544,50 @@ function renderGroupView() {
     if (spotlightKey) {
       const p = weekResponses()[spotlightKey];
       if (p && p.slots.includes(key)) {
-        cell.classList.add('selected-available');
-        cell.dataset.state = 'available';
+        const st = (p.states && p.states[key]) || 'available';
+        if (st === 'available') cell.classList.add('selected-available');
+        else if (st === 'yellow') cell.classList.add('selected-yellow');
+        else if (st === 'red') cell.classList.add('selected-red');
+        cell.dataset.state = st;
       }
       return;
     }
 
-    const names = participantsAt(key);
-    const count = names.length;
-    if (count === 0 || total === 0) { cell.classList.add('heat-0'); return; }
+    if (total === 0) { cell.classList.add('heat-0'); return; }
 
-    const ratio = count / total;
-    if (ratio <= 0.33) cell.classList.add('heat-low');
-    else if (ratio <= 0.66) cell.classList.add('heat-mid');
-    else cell.classList.add('heat-high');
+    const oc = overlapClass(key);
+    if (!oc) { cell.classList.add('heat-0'); return; }
 
-    const pipsWrap = document.createElement('div');
-    pipsWrap.className = 'pips';
-    if (count <= 6) {
-      for (let i = 0; i < count; i++) {
-        const pip = document.createElement('div');
-        pip.className = 'pip';
-        pipsWrap.appendChild(pip);
+    if (oc === 'all-green') {
+      cell.classList.add('overlap-green');
+    } else if (oc === 'has-yellow') {
+      cell.classList.add('overlap-yellow');
+    } else if (oc === 'has-red') {
+      cell.classList.add('overlap-red');
+    } else if (oc === 'partial') {
+      const names = participantsAt(key);
+      const count = names.length;
+      const ratio = count / total;
+      if (ratio <= 0.33) cell.classList.add('heat-low');
+      else if (ratio <= 0.66) cell.classList.add('heat-mid');
+      else cell.classList.add('heat-high');
+      const pipsWrap = document.createElement('div');
+      pipsWrap.className = 'pips';
+      if (count <= 6) {
+        for (let i = 0; i < count; i++) {
+          const pip = document.createElement('div');
+          pip.className = 'pip';
+          pipsWrap.appendChild(pip);
+        }
+      } else {
+        const span = document.createElement('span');
+        span.className = 'pip-count';
+        span.textContent = count;
+        pipsWrap.appendChild(span);
       }
-    } else {
-      const span = document.createElement('span');
-      span.className = 'pip-count';
-      span.textContent = count;
-      pipsWrap.appendChild(span);
+      cell.appendChild(pipsWrap);
+      return;
     }
-    cell.appendChild(pipsWrap);
   });
 
   renderNotes();
@@ -513,11 +603,14 @@ function renderNotes() {
 }
 
 function renderMineView() {
+  const btnRow = els.gridTable.querySelector('.day-btn-row');
+  if (btnRow) btnRow.style.display = '';
   els.notesPanel.style.display = 'none';
   const cells = els.gridTable.querySelectorAll('.cell');
   cells.forEach(cell => {
     cell.classList.remove('readonly', 'heat-0', 'heat-low', 'heat-mid', 'heat-high');
     cell.classList.remove('selected-available', 'selected-yellow', 'selected-red');
+    cell.classList.remove('overlap-green', 'overlap-yellow', 'overlap-red');
     cell.dataset.state = '';
     cell.innerHTML = '';
     const key = cell.dataset.key;
@@ -577,7 +670,6 @@ function applyMode() {
 els.tabMine.addEventListener('click', () => { mode = 'mine'; applyMode(); });
 els.tabGroup.addEventListener('click', () => { mode = 'group'; spotlightKey = null; applyMode(); });
 
-// ---------- Auto-save ----------
 function autoSave() {
   clearTimeout(saveTimeout);
   saveTimeout = setTimeout(() => {
@@ -617,7 +709,6 @@ els.noteInput.addEventListener('input', () => {
   if (currentPlayer) autoSave();
 });
 
-// ---------- settings ----------
 function populateSettingsFields() {
   els.setName.value = campaign.name;
   els.setDesc.value = campaign.description || '';
@@ -715,7 +806,6 @@ els.deleteCampaignBtn.addEventListener('click', async () => {
   else showToast('Could not delete campaign');
 });
 
-// --- Theme toggle ---
 function setTheme(theme) {
   document.documentElement.setAttribute('data-theme', theme);
   localStorage.setItem('theme', theme);
@@ -735,7 +825,6 @@ function toggleTheme() {
   setTheme(current === 'light' ? 'dark' : 'light');
 }
 
-// Load saved theme
 const savedTheme = localStorage.getItem('theme') || 'dark';
 setTheme(savedTheme);
 

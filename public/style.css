@@ -305,6 +305,59 @@ button:active { transform: translateY(1px); }
   box-shadow: inset 0 1px 0 rgba(255,255,255,.28), inset 0 -2px 3px rgba(0,0,0,.22);
   border-color: #008f6a;
 }
+
+.cell.overlap-green {
+  background: linear-gradient(150deg, #33d4a8, #00a97f 50%, #008f6a);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.28), inset 0 -2px 3px rgba(0,0,0,.22);
+  border-color: #008f6a;
+}
+.cell.overlap-yellow {
+  background: linear-gradient(150deg, #f0e68c, #d4c85a 50%, #b8ac3a);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.20), inset 0 -2px 3px rgba(0,0,0,.20);
+  border-color: #b8ac3a;
+}
+.cell.overlap-red {
+  background: linear-gradient(150deg, #d96a64, #c2554f 50%, #a0453f);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.12), inset 0 -2px 3px rgba(0,0,0,.25);
+  border-color: #a0453f;
+  opacity: 0.7;
+}
+
+.day-btn-row th.day-btn-label { padding: 0; }
+.day-btn-cell {
+  padding: 3px 2px !important;
+  text-align: center;
+}
+.day-btn {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 5px;
+  border-radius: 3px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  line-height: 1;
+  margin: 1px;
+  font-family: var(--font-mono);
+  transition: background .1s, border-color .1s, color .1s;
+}
+.day-btn-green {
+  background: rgba(0,169,127,.18);
+  border-color: var(--accent-soft);
+  color: var(--accent-hi);
+}
+.day-btn-green:hover {
+  background: rgba(0,169,127,.35);
+  border-color: var(--accent-hi);
+}
+.day-btn-clear {
+  background: rgba(194,85,79,.12);
+  border-color: rgba(194,85,79,.4);
+  color: var(--danger);
+}
+.day-btn-clear:hover {
+  background: rgba(194,85,79,.25);
+  border-color: var(--danger);
+}
 .cell .pips { 
   position: absolute; 
   inset: 0; 
